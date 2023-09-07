@@ -24,10 +24,9 @@ package main
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
-	"log"
 	"os"
 	"os/exec"
 	"strconv"
@@ -171,7 +170,7 @@ func GetUnicorn(w http.ResponseWriter, r *http.Request) {
 
 	strRequestID := strings.TrimRight(string(requestID), "\n")
 	UnicornsRequested[strRequestID] = amount
-	log.Printf("unicorns requested: %v", UnicornRequested)
+	log.Printf("unicorns requested: %v", amount)
 
 	data := struct {
 		Token  string
@@ -202,14 +201,16 @@ func CheckUnicorn(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Processing in progress..."))
 	}
 
-	items := []uniCorn{}
+	// Return the items as FIFO
+	items := make([]uniCorn, requestedAmount)
 	for i := 0; i < requestedAmount; i++ {
 		item, ok := UnicornStore.Pop().(uniCorn)
 		if !ok {
 			http.Error(w, "Could not procceed", http.StatusInternalServerError)
 			return
 		}
-		items = append(items, item)
+
+		items[requestedAmount-i] = item
 	}
 
 	d, err := json.Marshal(items)
@@ -218,7 +219,7 @@ func CheckUnicorn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("unicorns ready")
-	log.Println(items)
+	logger.Println("unicorns ready")
+	logger.Println(items)
 	w.Write(d)
 }
