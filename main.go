@@ -101,7 +101,7 @@ func main() {
 	loadFile("adj.txt", &AvailableAdjectives)
 	logger.Println("file loaded successfully")
 
-	interval := 5
+	interval := 20
 	ticker := time.Tick(time.Duration(interval) * time.Second)
 	go func() {
 		for {
@@ -210,7 +210,8 @@ func CheckUnicorn(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		items[requestedAmount-i] = item
+		lastIndex := requestedAmount - 1
+		items[lastIndex-i] = item
 	}
 
 	d, err := json.Marshal(items)
